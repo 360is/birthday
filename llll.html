@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#fbe4ea">
+<title>生日快乐 · 林雅慧</title>
+<style>
+:root{
+  --bg1:#fdeef2; --bg2:#fbe0e8; --bg3:#f6d7e2;
+  --rose:#e58aa5; --rose-deep:#d97e97; --rose-light:#f2a8bd;
+  --cream:#fffaf6; --ink:#7a4b58; --ink-soft:#a97685;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
+html,body{height:100%;overflow:hidden}
+body{
+  font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  background:linear-gradient(160deg,var(--bg1) 0%,var(--bg2) 48%,var(--bg3) 100%);
+  color:var(--ink); touch-action:manipulation;
+}
+/* ---------- 梦幻背景光斑 ---------- */
+.blob{position:fixed;border-radius:50%;filter:blur(70px);opacity:.55;z-index:0;pointer-events:none;animation:floatBlob 14s ease-in-out infinite}
+.blob.b1{width:44vmin;height:44vmin;background:#ffd3de;top:-8%;left:-10%}
+.blob.b2{width:38vmin;height:38vmin;background:#ffe9d2;bottom:-6%;right:-8%;animation-delay:-5s}
+.blob.b3{width:30vmin;height:30vmin;background:#e8dcff;top:40%;left:60%;animation-delay:-9s}
+@keyframes floatBlob{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(4vmin,-3vmin) scale(1.08)}}
+
+canvas#confettiCanvas{position:fixed;inset:0;z-index:30;pointer-events:none}
+canvas#fireworksCanvas{position:fixed;inset:0;z-index:1;pointer-events:none}
+
+/* ---------- 场景通用 ---------- */
+.scene{
+  position:fixed;inset:0;z-index:2;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:24px;text-align:center;
+  opacity:0;pointer-events:none;transform:scale(1.02);
+  transition:opacity .9s ease,transform .9s ease;
+}
+.scene.active{opacity:1;pointer-events:auto;transform:scale(1)}
+.serif{font-family:"Songti SC","STSong","Noto Serif SC",serif}
+.kicker{letter-spacing:.5em;font-size:12px;color:var(--ink-soft);text-indent:.5em;margin-bottom:18px}
+.btn{
+  border:none;cursor:pointer;font-size:16px;letter-spacing:.15em;text-indent:.15em;
+  padding:15px 38px;border-radius:999px;color:#fff;
+  background:linear-gradient(135deg,var(--rose-light),var(--rose));
+  box-shadow:0 10px 24px rgba(229,138,165,.38),inset 0 1px 0 rgba(255,255,255,.55);
+  transition:transform .25s,box-shadow .25s,opacity .5s;
+}
+.btn:active{transform:scale(.94)}
+.btn.hidden{display:none}
+.fade-hint{font-size:13px;color:var(--ink-soft);letter-spacing:.2em;margin-top:26px;animation:breath 2.4s ease-in-out infinite}
+@keyframes breath{0%,100%{opacity:.45}50%{opacity:1}}
+
+/* ---------- 场景0 开场 ---------- */
+#scene0 h1{font-size:clamp(40px,11vw,72px);letter-spacing:.18em;text-indent:.18em;color:var(--rose-deep);margin:8px 0 20px}
+#scene0 .sub{font-size:15px;color:var(--ink-soft);letter-spacing:.25em;line-height:2}
+.load-bar{width:120px;height:2px;background:rgba(217,126,151,.2);border-radius:2px;margin-top:36px;overflow:hidden}
+.load-bar i{display:block;height:100%;width:0;background:var(--rose);border-radius:2px;animation:load 3s linear forwards}
+@keyframes load{to{width:100%}}
+
+/* ---------- 场景1 星空粒子蛋糕 ---------- */
+#scene1{background:radial-gradient(ellipse at 50% 26%,#191227 0%,#0b0813 55%,#030207 100%)}
+.en-title{
+  font-family:"Snell Roundhand","Apple Chancery","Brush Script MT","Segoe Script","Lucida Handwriting",cursive;
+  font-style:italic;font-size:clamp(38px,9vw,58px);letter-spacing:.05em;margin-bottom:4px;
+  background:linear-gradient(115deg,#ffd9e6 10%,#f7aec7 45%,#ffe9c8 90%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  animation:enGlow 3s ease-in-out infinite;
+}
+@keyframes enGlow{0%,100%{filter:drop-shadow(0 0 9px rgba(255,170,200,.35))}50%{filter:drop-shadow(0 0 20px rgba(255,190,215,.7))}}
+.cake-canvas-wrap{width:min(92vw,470px);height:min(54vh,470px)}
+#cakeCanvas{width:100%;height:100%;display:block;cursor:pointer}
+#scene1 .hint{margin-top:10px;font-size:14px;letter-spacing:.28em;color:rgba(255,235,242,.6);animation:breath 2.4s infinite}
+
+#blessing{margin-top:6px;opacity:0;transform:scale(.5);pointer-events:none;transition:opacity .2s}
+#blessing.show{opacity:1;transform:scale(1);transition:transform .7s cubic-bezier(.2,1.5,.35,1),opacity .4s}
+#blessing span{display:inline-block;font-size:clamp(34px,9.5vw,54px);letter-spacing:.12em;
+  background:linear-gradient(120deg,#e58aa5,#f0a55f,#e58aa5);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  opacity:0;animation:popIn .55s cubic-bezier(.2,1.5,.4,1) forwards;animation-delay:var(--d)}
+@keyframes popIn{from{opacity:0;transform:translateY(24px) scale(.4)}to{opacity:1;transform:translateY(0) scale(1)}}
+#toPhotos{margin-top:34px;opacity:0;pointer-events:none;transform:translateY(14px)}
+#toPhotos.show{opacity:1;pointer-events:auto;transform:translateY(0);transition:opacity .6s .3s,transform .6s .3s}
+
+/* ---------- 场景2 聊天纪念册 ---------- */
+#scene2{
+  display:block;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:32px 18px calc(36px + env(safe-area-inset-bottom));
+  background:linear-gradient(170deg,#fdf5ec 0%,#fbeee4 55%,#f9e9df 100%);
+}
+.album-wrap{max-width:660px;margin:0 auto;position:relative}
+#scene2 h2{font-size:clamp(22px,5.6vw,30px);letter-spacing:.18em;text-indent:.18em;color:#b98a78}
+#scene2 .tip{font-size:12.5px;color:#c4a294;letter-spacing:.22em;margin-top:10px}
+.album-head{position:relative}
+.album-head .deco{position:absolute;color:#e9b3a6;opacity:.5;pointer-events:none}
+.album-head .deco.d1{top:-4px;left:6%}
+.album-head .deco.d2{top:4px;right:7%;font-size:12px}
+.album-board{
+  margin:20px 0 18px;border-radius:20px;padding:28px 16px 30px;
+  background:
+    linear-gradient(rgba(214,182,158,.16) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(214,182,158,.16) 1px,transparent 1px),
+    #fdf8f0;
+  background-size:26px 26px;
+  box-shadow:0 16px 36px rgba(196,148,120,.2),inset 0 0 0 4px rgba(255,255,255,.5);
+}
+.timeline{position:relative;max-width:520px;margin:0 auto}
+.timeline::before{content:"";position:absolute;left:20px;top:14px;bottom:14px;border-left:2px dashed #f0cf8e}
+.tl-node{display:flex;gap:16px;position:relative;padding:0 0 30px}
+.tl-node:last-child{padding-bottom:4px}
+.tl-rail{flex:0 0 42px;display:flex;justify-content:center}
+.tl-dot{width:42px;height:42px;border-radius:50%;background:#fffdf9;border:1.5px solid #f3c6d2;
+  display:flex;align-items:center;justify-content:center;position:relative;z-index:1;
+  font-family:Georgia,"Times New Roman",serif;font-size:14px;color:#d4889e;letter-spacing:.05em;
+  box-shadow:0 4px 10px rgba(200,140,150,.18)}
+.tl-body{flex:1;min-width:0}
+.shot-card{margin:0}
+.shot-box{position:relative;border-radius:16px;border:1.5px solid #f3c6d2;background:#fffdfb;
+  overflow:hidden;box-shadow:0 8px 20px rgba(196,148,120,.16);cursor:pointer}
+.shot-box img{width:100%;height:auto;display:block}
+.shot-box img:not([src=""]) + .shot-hint{display:none}
+img.chat-shot[src=""]{display:none}
+.shot-hint{display:flex;flex-direction:column;gap:6px;align-items:center;justify-content:center;
+  width:100%;aspect-ratio:960/1402; /* ✏️ 空图框占位比例 = 截图尺寸 960×1402 */
+  color:#dcae9e;font-size:12px;letter-spacing:.16em}
+.shot-hint svg{width:26px;height:26px;fill:#f0c4b4}
+.shot-hint b{font-weight:500}
+.shot-hint small{font-size:9.5px;letter-spacing:.08em;opacity:.75}
+.shot-note{margin:12px 0 0;background:#fffdf9;border-radius:14px;padding:13px 16px;
+  font-size:13.5px;line-height:1.95;letter-spacing:.1em;color:#8a6558;text-align:left;
+  box-shadow:0 6px 16px rgba(196,148,120,.14),inset 0 1px 0 #fff}
+.stat-card{display:grid;grid-template-columns:repeat(3,1fr);width:100%;max-width:520px;margin:0 auto 18px;
+  background:rgba(255,253,249,.92);border-radius:16px;padding:14px 4px;
+  box-shadow:0 10px 24px rgba(196,148,120,.18),inset 0 1px 0 #fff}
+.stat{display:flex;flex-direction:column;gap:4px;align-items:center;position:relative}
+.stat+.stat::before{content:"";position:absolute;left:0;top:16%;bottom:16%;width:1px;background:rgba(200,160,140,.25)}
+.stat b{font-family:Georgia,"Times New Roman",serif;font-size:clamp(17px,4.8vw,22px);color:#c9808f;font-weight:600}
+.stat b i{font-style:normal;font-size:.55em;margin-left:2px}
+.stat span{font-size:10.5px;color:#b3907f;letter-spacing:.14em}
+#scene2 .btn{background:linear-gradient(135deg,#f9d6e0,#f4bfce);color:#bd6d86;
+  box-shadow:0 10px 24px rgba(214,140,165,.3),inset 0 1px 0 rgba(255,255,255,.7)}
+#scene2 .btn:active{transform:scale(.95)}
+.export-link{display:block;margin:12px auto 0;background:none;border:none;cursor:pointer;
+  font-size:11px;letter-spacing:.14em;color:#c4a294;opacity:.8;text-decoration:underline dotted #d8bfae}
+@media (max-width:380px){.tl-node{gap:12px}.shot-note{font-size:12.5px}}
+
+/* ---------- 场景3 信封 ---------- */
+.env-wrap{perspective:900px}
+.envelope{position:relative;width:min(320px,82vw);height:212px;transition:opacity .8s,transform .8s}
+.envelope.gone{opacity:0;transform:scale(.85) translateY(20px);pointer-events:none}
+.env-back{position:absolute;inset:0;border-radius:10px;background:linear-gradient(160deg,#f6c9d6,#f0b7c8);
+  box-shadow:0 18px 40px rgba(190,110,140,.32),inset 0 2px 3px rgba(255,255,255,.6)}
+.env-letter{position:absolute;left:6%;right:6%;top:7%;bottom:9%;z-index:2;border-radius:6px;
+  background:var(--cream);box-shadow:0 3px 10px rgba(160,90,110,.2);
+  display:flex;align-items:center;justify-content:center;
+  transition:transform 1.4s cubic-bezier(.3,.7,.3,1) .95s,z-index 0s 1s}
+.env-letter .mini-heart{font-size:26px;color:var(--rose)}
+.env-front{position:absolute;inset:0;z-index:3;border-radius:10px;
+  background:linear-gradient(200deg,#f8d3de,#f2bcc9);
+  clip-path:polygon(0 14%,50% 56%,100% 14%,100% 100%,0 100%);
+  box-shadow:inset 0 -3px 8px rgba(190,110,140,.15)}
+.env-front::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(115deg,transparent 49.6%,rgba(190,110,140,.18) 50%,transparent 50.4%),
+             linear-gradient(-115deg,transparent 49.6%,rgba(190,110,140,.18) 50%,transparent 50.4%)}
+.flap{position:absolute;top:0;left:0;right:0;height:56%;z-index:4;
+  background:linear-gradient(180deg,#efadc0,#f3c1cf);
+  clip-path:polygon(0 0,100% 0,50% 100%);
+  border-radius:10px 10px 0 0;
+  transform-origin:top center;transition:transform 1s ease-in-out,z-index 0s .5s;
+  box-shadow:inset 0 -4px 8px rgba(190,110,140,.12)}
+.seal{position:absolute;left:50%;bottom:-16px;transform:translateX(-50%);
+  width:44px;height:44px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#f6a9bf,#d97e97 70%);
+  box-shadow:0 3px 8px rgba(170,80,110,.4),inset 0 2px 3px rgba(255,255,255,.5);
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px}
+.envelope.open .flap{transform:rotateX(180deg);z-index:1}
+.envelope.open .env-letter{transform:translateY(-58%);z-index:5}
+#scene3 .env-tip{margin-top:30px;font-size:13px;letter-spacing:.24em;color:var(--ink-soft);animation:breath 2.4s infinite}
+
+.letter-card{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.7);
+  width:min(560px,88vw);max-height:78vh;overflow-y:auto;
+  background:var(--cream);border-radius:18px;padding:40px 34px 34px;
+  box-shadow:0 24px 60px rgba(170,90,120,.3),inset 0 1px 0 #fff;
+  opacity:0;pointer-events:none;transition:opacity .8s,transform .9s cubic-bezier(.2,1.1,.35,1)}
+.letter-card.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
+.letter-card h3{font-size:22px;letter-spacing:.24em;color:var(--rose-deep);margin-bottom:20px}
+.letter-card p{font-size:15.5px;line-height:2.15;letter-spacing:.1em;color:var(--ink);text-align:left;margin-bottom:10px;
+  opacity:0}
+.letter-card.show p{animation:fadeUp .9s ease forwards}
+.letter-card.show p:nth-child(2){animation-delay:.25s}.letter-card.show p:nth-child(3){animation-delay:.7s}
+.letter-card.show p:nth-child(4){animation-delay:1.15s}.letter-card.show p:nth-child(5){animation-delay:1.6s}
+.letter-card.show p:nth-child(6){animation-delay:2.05s}.letter-card.show p:nth-child(7){animation-delay:2.5s}
+.letter-card .sign{text-align:right;color:var(--ink-soft)}
+.letter-card .btn{margin-top:18px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.letter-card::before{content:"♡";position:absolute;top:16px;left:50%;transform:translateX(-50%);color:var(--rose-light);font-size:18px}
+
+/* ---------- 场景4 烟花 ---------- */
+#scene4{background:transparent}
+#scene4 .final-title{font-size:clamp(44px,13vw,86px);letter-spacing:.16em;text-indent:.16em;color:#fff;
+  text-shadow:0 0 24px rgba(255,170,200,.9),0 0 60px rgba(255,150,180,.6),0 4px 18px rgba(180,80,120,.45);
+  animation:finalFloat 3.2s ease-in-out infinite}
+#scene4 .final-sub{margin-top:22px;font-size:15px;letter-spacing:.32em;color:#fff;
+  text-shadow:0 0 14px rgba(255,170,200,.8);opacity:.95}
+@keyframes finalFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+#replay{margin-top:44px;background:rgba(255,255,255,.16);backdrop-filter:blur(6px);
+  border:1px solid rgba(255,255,255,.55);box-shadow:0 8px 22px rgba(120,50,80,.25)}
+
+/* ---------- 音乐按钮 ---------- */
+#musicBtn{position:fixed;top:calc(16px + env(safe-area-inset-top));right:16px;z-index:50;
+  width:46px;height:46px;border-radius:50%;border:1px solid rgba(255,255,255,.7);cursor:pointer;
+  background:rgba(255,255,255,.4);backdrop-filter:blur(8px);
+  color:var(--rose-deep);font-size:20px;
+  box-shadow:0 6px 16px rgba(190,120,145,.25);transition:transform .2s}
+#musicBtn:active{transform:scale(.9)}
+#musicBtn.on{animation:spinNote 2.6s ease-in-out infinite}
+#musicBtn.off{color:#c4a5af;text-decoration:line-through}
+@keyframes spinNote{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}
+
+@media (max-width:480px){
+  .letter-card{padding:34px 24px 28px}
+}
+</style>
+</head>
+<body>
+
+<div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+
+<canvas id="fireworksCanvas"></canvas>
+<canvas id="confettiCanvas"></canvas>
+
+<button id="musicBtn" class="on" title="音乐开关">♫</button>
+
+<!-- ========== 场景0：开场 ========== -->
+<section id="scene0" class="scene active">
+  <p class="kicker">♡ SPECIAL DAY ♡</p>
+  <h1 class="serif">林雅慧</h1>
+  <p class="sub">有一份专属于你的惊喜<br>正在派送的途中 …</p>
+  <div class="load-bar"><i></i></div>
+</section>
+
+<!-- ========== 场景1：星空粒子蛋糕 ========== -->
+<section id="scene1" class="scene">
+  <p class="en-title">Happy Birthday</p>
+  <div class="cake-canvas-wrap"><canvas id="cakeCanvas"></canvas></div>
+  <p class="hint" id="candleHint">轻轻点击蜡烛，许下生日愿望吧</p>
+  <div id="blessing">
+    <span style="--d:.05s">生</span><span style="--d:.22s">日</span><span style="--d:.39s">快</span><span style="--d:.56s">乐</span>
+  </div>
+  <button class="btn" id="toPhotos">拆开下一份惊喜 →</button>
+</section>
+
+<!-- ========== 场景2：聊天纪念册 ========== -->
+<section id="scene2" class="scene">
+  <div class="album-wrap">
+    <header class="album-head">
+      <span class="deco d1">♡</span><span class="deco d2">♡</span>
+      <h2 class="serif">聊天记录回忆ing</h2>
+      <p class="tip">这些都是非常久远的对话了啊，时间真的过的好快啊</p>
+    </header>
+    <div class="album-board">
+      <div class="timeline">
+        <!-- ✏️ 放截图两种方式：① 打开网页后直接点击图框选图，或把图片拖进图框（自动保存在浏览器，刷新不丢）；② 把 <img> 的 src 换成截图路径（如 src="chat01.jpg"，图片需和本文件放同一文件夹，这样发给别人也带图）。下方卡片文字改成你的回忆感悟 -->
+        <div class="tl-node">
+          <div class="tl-rail"><span class="tl-dot">01</span></div>
+          <div class="tl-body">
+            <figure class="shot-card">
+              <div class="shot-box">
+                <img class="chat-shot" src="" alt="聊天截图 01">
+                <span class="shot-hint"><svg viewBox="0 0 24 24"><path d="M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-5l-3 3-3-3H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/></svg><b>点击选择 或 拖入聊天截图</b><small>自动保存于本浏览器 · 也可在代码里填 img 的 src</small></span>
+              </div>
+              <figcaption class="shot-note">我们就这样互夸，嘿嘿嘿！</figcaption>
+            </figure>
+          </div>
+        </div>
+        <div class="tl-node">
+          <div class="tl-rail"><span class="tl-dot">02</span></div>
+          <div class="tl-body">
+            <figure class="shot-card">
+              <div class="shot-box">
+                <img class="chat-shot" src="" alt="聊天截图 02">
+                <span class="shot-hint"><svg viewBox="0 0 24 24"><path d="M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-5l-3 3-3-3H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/></svg><b>点击选择 或 拖入聊天截图</b><small>自动保存于本浏览器 · 也可在代码里填 img 的 src</small></span>
+              </div>
+              <figcaption class="shot-note">我就说吧，你肯定可以考到理想的高中滴！不要否定自己呀</figcaption>
+            </figure>
+          </div>
+        </div>
+        <div class="tl-node">
+          <div class="tl-rail"><span class="tl-dot">03</span></div>
+          <div class="tl-body">
+            <figure class="shot-card">
+              <div class="shot-box">
+                <img class="chat-shot" src="" alt="聊天截图 03">
+                <span class="shot-hint"><svg viewBox="0 0 24 24"><path d="M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-5l-3 3-3-3H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/></svg><b>点击选择 或 拖入聊天截图</b><small>自动保存于本浏览器 · 也可在代码里填 img 的 src</small></span>
+              </div>
+              <figcaption class="shot-note">就这样蛐蛐学校，他们赶上双减也是有福了</figcaption>
+            </figure>
+          </div>
+        </div>
+        <div class="tl-node">
+          <div class="tl-rail"><span class="tl-dot">04</span></div>
+          <div class="tl-body">
+            <figure class="shot-card">
+              <div class="shot-box">
+                <img class="chat-shot" src="" alt="聊天截图 04">
+                <span class="shot-hint"><svg viewBox="0 0 24 24"><path d="M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-5l-3 3-3-3H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/></svg><b>点击选择 或 拖入聊天截图</b><small>自动保存于本浏览器 · 也可在代码里填 img 的 src</small></span>
+              </div>
+              <figcaption class="shot-note">时间就这样一年又一年的流逝，怎么能过的这么快啊</figcaption>
+            </figure>
+          </div>
+        </div>
+        <div class="tl-node">
+          <div class="tl-rail"><span class="tl-dot">05</span></div>
+          <div class="tl-body">
+            <figure class="shot-card">
+              <div class="shot-box">
+                <img class="chat-shot" src="" alt="聊天截图 05">
+                <span class="shot-hint"><svg viewBox="0 0 24 24"><path d="M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-5l-3 3-3-3H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/></svg><b>点击选择 或 拖入聊天截图</b><small>自动保存于本浏览器 · 也可在代码里填 img 的 src</small></span>
+              </div>
+              <figcaption class="shot-note">我们都走过了中考高考，考到这个分数真的很厉害呀！</figcaption>
+            </figure>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat"><b>5</b><span>回忆片段</span></div>
+      <div class="stat"><b>4097<i>天</i></b><span>相伴时光</span></div>
+      <div class="stat"><b>∞</b><span>无限回忆</span></div>
+    </div>
+    <button class="btn" id="toLetter">继续翻阅回忆</button>
+    <button class="export-link" id="exportBtn" title="生成包含照片的完整网页文件，可直接发送给别人">把这份纪念册（含照片）保存成文件 ♡</button>
+  </div>
+</section>
+
+<!-- ========== 场景3：信 ========== -->
+<section id="scene3" class="scene">
+  <div class="env-wrap">
+    <div class="envelope" id="envelope">
+      <div class="env-back"></div>
+      <div class="env-letter"><span class="mini-heart">♥</span></div>
+      <div class="env-front"></div>
+      <div class="flap"><div class="seal">♥</div></div>
+    </div>
+  </div>
+  <p class="env-tip" id="envTip">一封信，正在为你开启 …</p>
+  <div class="letter-card" id="letterCard">
+    <h3 class="serif">致 雅慧</h3>
+    <!-- ✏️ 在下面的 <p> 里修改你想对她说的话 -->
+    <p>亲爱的雅慧：</p>
+    <p>生日快乐！🎂</p>
+    <p>人生不过三万天，如果从我们最最开始认识的那一天到今天也已经有了4093天了，其实之前我还从没有去仔细计算过认识的天数，但也明确的知道肯定不短。小学初中高中，很难想象我们认识的时间已经如此之久，占据了人生的超十分之一了。</p>
+    <p>过往种种细数珍贵，但让我完整回忆更具体的事情，又是那么的模糊！只是依稀记得小学时，我们总是在放学后玩闹，去逛周围的商店···初高中，我们没有小学时那样形影相伴了，但依旧是又少次的出来聚一聚，玩一玩，也不算是断联。时间会冲淡许多东西，但每每回想起从前，记忆就一串串的浮现，模糊又清晰。</p>
+    <p>依旧难以想象我们都已经步入大学，从前吐槽作业，谈论老师，讨论学校设施，聊八卦···都历历在目。我们也都为中考和高考而焦虑，还记得中考出分在即，你总是提心吊胆的，但是好在最后的结果依旧差强人意。我们都走过了漫长而痛苦的中高考，在这场潮湿的雨季中，点点滴滴的回忆都是如此珍贵。</p>
+    <p>在我眼中你始终是一个乐观，积极，向上的小女孩！！！相信无论往后你遇到什么都能够迎刃而解，就算偶尔的不如意，也请相信，一切都是最好的安排，那都是上天在指引你通往另一条花路。</p>
+    <p>哈哈哈哈哈，有点跑偏了，好吧。我就这样写的毫无逻辑。希望你永远做个永不内耗的小孩，永远相信自己，不要被他人裹挟，不要陷入焦虑的泥泞中！无论遇到任何事都始终相信自己</p>
+    <p>后海有树的院子，夏代有工的玉，此时此刻的云，二十岁的你。都是如此珍贵</p>
+    <p>祝你常拾理想，终得浪漫，在朝朝暮暮里岁岁长安</p>
+    <p class="sign">—— 永远站在你这边的我 ♡</p>
+    <button class="btn" id="toFireworks">最后，为你放一场烟花 ✦</button>
+  </div>
+</section>
+
+<!-- ========== 场景4：烟花 ========== -->
+<section id="scene4" class="scene">
+  <h1 class="serif final-title">生日快乐</h1>
+  <p class="final-sub">TO 林雅慧 · 岁岁常欢愉，年年皆胜意</p>
+  <button class="btn" id="replay">回到最初 ♡</button>
+</section>
+
+<script>
+const $=s=>document.querySelector(s);
+const DPR=Math.min(window.devicePixelRatio||1,2);
+
+/* ================= 场景切换 ================= */
+let sceneTimer=null;
+function goTo(id){
+  document.querySelectorAll('.scene').forEach(s=>s.classList.toggle('active',s.id===id));
+  if(id==='scene0'){ startConfetti(); sceneTimer=setTimeout(()=>goTo('scene1'),3000); }
+  else { clearTimeout(sceneTimer); if(id!=='scene0') stopConfettiSoon(); }
+  if(id==='scene3') runEnvelope();
+  if(id==='scene4') startFireworks(); else stopFireworks();
+}
+$('#scene0').addEventListener('click',()=>goTo('scene1'));
+
+/* ================= 彩带/礼花（开场） ================= */
+const cCvs=$('#confettiCanvas'),cCtx=cCvs.getContext('2d');
+const COLORS=['#f8b4c4','#fbd1a2','#b5e0c8','#a5c8f0','#d9b8e8','#f7e39b','#f192a8','#ffd9e3'];
+let pieces=[],confettiOn=false,spawnLeft=0,cRaf=null;
+function sizeCanvas(cv){cv.width=innerWidth*DPR;cv.height=innerHeight*DPR;cv.getContext('2d').setTransform(DPR,0,0,DPR,0,0);}
+function resizeAll(){sizeCanvas(cCvs);sizeCanvas(fCvs);buildCakeScene();}
+window.addEventListener('resize',resizeAll);
+
+function spawnPiece(top){
+  return{x:Math.random()*innerWidth,y:top?-20:Math.random()*-innerHeight,
+    w:5+Math.random()*7,h:8+Math.random()*10,c:COLORS[Math.random()*COLORS.length|0],
+    vy:1.2+Math.random()*2.2,ang:Math.random()*Math.PI*2,va:(Math.random()-.5)*.12,
+    circle:Math.random()<.25,sway:Math.random()*Math.PI*2};
+}
+function startConfetti(){
+  confettiOn=true;spawnLeft=160;
+  if(!cRaf) confettiLoop();
+}
+function stopConfettiSoon(){confettiOn=false;}
+function confettiLoop(){
+  cRaf=requestAnimationFrame(confettiLoop);
+  cCtx.clearRect(0,0,innerWidth,innerHeight);
+  if(confettiOn&&spawnLeft>0){for(let i=0;i<4&&spawnLeft>0;i++,spawnLeft--)pieces.push(spawnPiece(true));}
+  pieces=pieces.filter(p=>p.y<innerHeight+30);
+  if(!confettiOn&&pieces.length===0){cancelAnimationFrame(cRaf);cRaf=null;cCtx.clearRect(0,0,innerWidth,innerHeight);return;}
+  for(const p of pieces){
+    p.y+=p.vy;p.sway+=.03;p.x+=Math.sin(p.sway)*.7;p.ang+=p.va;
+    cCtx.save();cCtx.translate(p.x,p.y);cCtx.rotate(p.ang);cCtx.fillStyle=p.c;
+    if(p.circle){cCtx.beginPath();cCtx.arc(0,0,p.w/2,0,7);cCtx.fill();}
+    else cCtx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
+    cCtx.restore();
+  }
+}
+startConfetti(); // 开场立即飘带
+sceneTimer=setTimeout(()=>goTo('scene1'),3000);
+
+/* ================= 星空粒子蛋糕 ================= */
+const kCvs=$('#cakeCanvas'),kCtx=kCvs.getContext('2d');
+const CAKE_PINKS=['#f7c2d1','#f2a8bd','#ee96b2','#f9d4de','#e889a6','#f6b1c5'];
+const CREAMS=['#fff6f0','#ffe9e2','#fffaf6'];
+const PEARL=['#ffffff','#ffd9e6','#ffe9c8'];
+let KW=0,KH=0,cakePts=[],stars=[],kcandles=[],smokes=[],litCount=0;
+const pickC=a=>a[Math.random()*a.length|0];
+
+function inRoundRect(x,y,rx,ry,w,h,r){
+  if(x<rx||x>rx+w||y<ry||y>ry+h)return false;
+  if(x>=rx+r&&x<=rx+w-r)return true;
+  if(y>=ry+r&&y<=ry+h-r)return true;
+  const ccx=x<rx+r?rx+r:rx+w-r,ccy=y<ry+r?ry+r:ry+h-r;
+  return (x-ccx)**2+(y-ccy)**2<=r*r;
+}
+function sampleInto(test,count,palette,aMin,aMax){
+  let placed=0,guard=count*40;
+  while(placed<count&&guard-->0){
+    const x=Math.random()*KW,y=Math.random()*KH;
+    if(test(x,y)){
+      cakePts.push({x,y,r:.8+Math.random()*1.1,c:pickC(palette),
+        ph:Math.random()*7,sp:.6+Math.random()*1.6,a:aMin+Math.random()*(aMax-aMin)});
+      placed++;
+    }
+  }
+}
+function buildCakeScene(){
+  KW=kCvs.parentElement.clientWidth;KH=kCvs.parentElement.clientHeight;
+  if(!KW||!KH)return;
+  kCvs.width=KW*DPR;kCvs.height=KH*DPR;kCtx.setTransform(DPR,0,0,DPR,0,0);
+  cakePts=[];stars=[];smokes=[];kcandles=[];
+  const cx=KW/2,ground=KH*0.95;
+  const w1=Math.min(KW*0.72,330),h1=KH*0.155;
+  const w2=w1*0.74,h2=h1*0.8;
+  const w3=w2*0.72,h3=h2*0.82;
+  const t1y=ground-h1,t2y=t1y-h2+3,t3y=t2y-h3+3;
+  // 托盘
+  sampleInto((x,y)=>((x-cx)/(w1*0.64))**2+((y-ground)/(h1*0.2))**2<=1,180,CREAMS,.22,.55);
+  // 三层蛋糕体
+  sampleInto((x,y)=>inRoundRect(x,y,cx-w1/2,t1y,w1,h1,12),900,CAKE_PINKS,.5,.95);
+  sampleInto((x,y)=>inRoundRect(x,y,cx-w2/2,t2y,w2,h2,10),620,CAKE_PINKS,.5,.95);
+  sampleInto((x,y)=>inRoundRect(x,y,cx-w3/2,t3y,w3,h3,9),420,CAKE_PINKS,.5,.95);
+  // 奶油花边（顶部垂落的圆弧）
+  const scallop=(ty,w)=>{const n=Math.max(5,Math.round(w/26)),sr=w/n/2;
+    for(let i=0;i<n;i++){const sx=cx-w/2+sr+i*2*sr;
+      sampleInto((x,y)=>(x-sx)**2+(y-ty)**2<=sr*sr&&y>=ty-2,26,CREAMS,.7,1);}};
+  scallop(t1y,w1);scallop(t2y,w2);scallop(t3y,w3);
+  // 糖珠点缀
+  for(let i=0;i<5;i++){const dx=cx-w1*0.32+i*w1*0.16;
+    sampleInto((x,y)=>(x-dx)**2+(y-(t1y+h1*0.55))**2<=9,10,i%2?PEARL:CREAMS,.6,1);}
+  for(let i=0;i<4;i++){const dx=cx-w2*0.3+i*w2*0.2;
+    sampleInto((x,y)=>(x-dx)**2+(y-(t2y+h2*0.55))**2<=7,8,i%2?PEARL:CREAMS,.6,1);}
+  for(let i=0;i<3;i++){const dx=cx-w3*0.26+i*w3*0.26;
+    sampleInto((x,y)=>(x-dx)**2+(y-(t3y+h3*0.55))**2<=5,7,i%2?PEARL:CREAMS,.6,1);}
+  // 居中一根蜡烛（条纹粒子）
+  const chH=KH*0.125,cw=Math.max(5,KW*0.014),kty=t3y-chH;
+  for(let y=kty+8;y<t3y-2;y+=3.2){
+    const stripe=Math.floor((y-kty)/7)%2===0;
+    cakePts.push({x:cx+(Math.random()-.5)*cw*.75,y:y+(Math.random()-.5)*1.6,
+      r:1+Math.random()*.9,c:stripe?'#fff5f2':'#f2a8bd',ph:0,sp:1,a:.95,still:true});
+  }
+  kcandles.push({x:cx,y:kty+8,lit:true,ph:Math.random()*7});
+  litCount=1;
+  // 背景星光
+  for(let i=0;i<110;i++)
+    stars.push({x:Math.random()*KW,y:Math.random()*KH,r:.5+Math.random()*1.5,ph:Math.random()*7,sp:.4+Math.random()*1.4});
+}
+function cakeLoop(){
+  requestAnimationFrame(cakeLoop);
+  if(!$('#scene1').classList.contains('active')||!KW)return;
+  const t=performance.now()/1000;
+  kCtx.clearRect(0,0,KW,KH);
+  // 星光闪烁
+  for(const s of stars){
+    kCtx.globalAlpha=(.25+.75*Math.abs(Math.sin(t*s.sp+s.ph)))*.9;
+    kCtx.fillStyle='#fff';
+    kCtx.beginPath();kCtx.arc(s.x,s.y,s.r,0,7);kCtx.fill();
+  }
+  // 蛋糕底部柔光
+  const g=kCtx.createRadialGradient(KW/2,KH*0.72,10,KW/2,KH*0.72,KW*0.55);
+  g.addColorStop(0,'rgba(255,150,190,0.15)');g.addColorStop(1,'rgba(255,150,190,0)');
+  kCtx.globalAlpha=1;kCtx.fillStyle=g;kCtx.fillRect(0,0,KW,KH);
+  // 蛋糕粒子（微微闪烁+漂浮）
+  for(const p of cakePts){
+    kCtx.globalAlpha=p.still?p.a:p.a*(0.72+0.28*Math.sin(t*p.sp+p.ph));
+    kCtx.fillStyle=p.c;
+    const jx=p.still?0:Math.sin(t*1.2+p.ph)*0.4;
+    kCtx.beginPath();kCtx.arc(p.x+jx,p.y,p.r,0,7);kCtx.fill();
+  }
+  // 烛光
+  for(const c of kcandles){
+    if(!c.lit)continue;
+    const fl=1+Math.sin(t*9+c.ph)*0.15,fy=c.y-7;
+    const fg=kCtx.createRadialGradient(c.x,fy,0,c.x,fy,16*fl);
+    fg.addColorStop(0,'rgba(255,240,190,0.95)');
+    fg.addColorStop(0.35,'rgba(255,190,110,0.55)');
+    fg.addColorStop(1,'rgba(255,150,80,0)');
+    kCtx.globalAlpha=1;kCtx.fillStyle=fg;
+    kCtx.beginPath();kCtx.arc(c.x,fy,16*fl,0,7);kCtx.fill();
+    kCtx.fillStyle='#fff3c0';
+    kCtx.beginPath();kCtx.arc(c.x,fy,2.6*fl,0,7);kCtx.fill();
+  }
+  // 熄烟
+  smokes=smokes.filter(s=>{
+    s.y+=s.vy;s.x+=Math.sin(t*2+s.ph)*0.3;s.life-=0.012;
+    if(s.life<=0)return false;
+    kCtx.globalAlpha=s.life*0.5;kCtx.fillStyle='#b8b8c8';
+    kCtx.beginPath();kCtx.arc(s.x,s.y,s.r*(1.7-s.life*0.7),0,7);kCtx.fill();
+    return true;
+  });
+  kCtx.globalAlpha=1;
+}
+cakeLoop();
+
+kCvs.addEventListener('pointerdown',e=>{
+  const rect=kCvs.getBoundingClientRect();
+  const x=e.clientX-rect.left,y=e.clientY-rect.top;
+  let best=null,bd=32;
+  for(const c of kcandles){
+    if(!c.lit)continue;
+    const d=Math.hypot(x-c.x,y-(c.y-6));
+    if(d<bd){bd=d;best=c;}
+  }
+  if(!best)return;
+  best.lit=false;litCount--;
+  for(let i=0;i<7;i++)
+    smokes.push({x:best.x+(Math.random()-.5)*4,y:best.y-8,
+      vy:-(.4+Math.random()*.7),r:2+Math.random()*2.5,life:1,ph:Math.random()*7});
+  if(litCount===0){
+    $('#candleHint').textContent='愿望已收到，一定会实现的 ✧';
+    setTimeout(()=>{$('#blessing').classList.add('show');$('#toPhotos').classList.add('show');},550);
+  }else{
+    $('#candleHint').textContent=`还有 ${litCount} 根蜡烛，继续许愿吧`;
+  }
+});
+$('#toPhotos').addEventListener('click',()=>goTo('scene2'));
+
+/* ================= 聊天纪念册：截图上传（点击/拖拽，自动保存在本浏览器） ================= */
+const SHOT_KEY='bday_chat_shots';
+function fitImage(file,cb){
+  const r=new FileReader();
+  r.onload=ev=>{
+    const im=new Image();
+    im.onload=()=>{
+      const max=1000,sc=Math.min(1,max/Math.max(im.width,im.height));
+      const cv=document.createElement('canvas');
+      cv.width=Math.max(1,Math.round(im.width*sc));cv.height=Math.max(1,Math.round(im.height*sc));
+      const ctx=cv.getContext('2d');
+      ctx.fillStyle='#fff';ctx.fillRect(0,0,cv.width,cv.height);
+      ctx.drawImage(im,0,0,cv.width,cv.height);
+      cb(cv.toDataURL('image/jpeg',.78));
+    };
+    im.src=ev.target.result;
+  };
+  r.readAsDataURL(file);
+}
+function saveShot(i,dataURL){
+  let saved={};try{saved=JSON.parse(localStorage.getItem(SHOT_KEY))||{}}catch(e){}
+  saved['s'+i]=dataURL;
+  try{localStorage.setItem(SHOT_KEY,JSON.stringify(saved));}
+  catch(e){alert('浏览器存储空间不足：这张图太大啦，建议压缩后再传，或直接在代码里填 img 的 src');}
+}
+function restoreShots(){
+  let saved={};try{saved=JSON.parse(localStorage.getItem(SHOT_KEY))||{}}catch(e){}
+  document.querySelectorAll('.shot-box').forEach((box,i)=>{
+    const img=box.querySelector('img.chat-shot');
+    if(saved['s'+i])img.src=saved['s'+i];
+  });
+}
+document.querySelectorAll('.shot-box').forEach((box,i)=>{
+  const img=box.querySelector('img.chat-shot');
+  const input=document.createElement('input');
+  input.type='file';input.accept='image/*';input.style.display='none';
+  box.appendChild(input);
+  box.addEventListener('click',()=>input.click());
+  box.addEventListener('dragover',e=>{e.preventDefault();box.style.outline='2px dashed #f0a8bd';});
+  box.addEventListener('dragleave',()=>box.style.outline='');
+  box.addEventListener('drop',e=>{
+    e.preventDefault();box.style.outline='';
+    const f=e.dataTransfer.files[0];
+    if(f&&f.type.startsWith('image/'))fitImage(f,d=>{img.src=d;saveShot(i,d);});
+  });
+  input.addEventListener('change',e=>{
+    const f=e.target.files[0];input.value='';
+    if(f)fitImage(f,d=>{img.src=d;saveShot(i,d);});
+  });
+});
+restoreShots();
+$('#toLetter').addEventListener('click',()=>goTo('scene3'));
+/* 导出：把当前网页（含已上传的照片）保存为一个独立 HTML 文件，发给对方就能看到图 */
+$('#exportBtn').addEventListener('click',()=>{
+  const html='<!DOCTYPE html>\n'+document.documentElement.outerHTML;
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([html],{type:'text/html'}));
+  a.download='birthday-with-photos.html';
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+});
+
+/* ================= 信封 ================= */
+let envBusy=false;
+function runEnvelope(){
+  if(envBusy)return;envBusy=true;
+  const env=$('#envelope'),card=$('#letterCard'),tip=$('#envTip');
+  env.classList.remove('gone');env.classList.remove('open');
+  card.classList.remove('show');tip.style.opacity=1;
+  setTimeout(()=>env.classList.add('open'),700);          // 盖子慢慢打开
+  setTimeout(()=>{env.classList.add('gone');tip.style.opacity=0;},3400); // 信升起后信封退场
+  setTimeout(()=>card.classList.add('show'),3750);        // 展开信纸
+}
+$('#toFireworks').addEventListener('click',()=>goTo('scene4'));
+
+/* ================= 烟花 ================= */
+const fCvs=$('#fireworksCanvas'),fCtx=fCvs.getContext('2d');
+const FW_COLORS=['#ff9ec6','#ffd166','#a0e7b0','#9ecfff','#d9a8ff','#ff8f8f','#fff0a8'];
+let rockets=[],parts=[],fwOn=false,fRaf=null,lastLaunch=0,burstCount=0;
+function startFireworks(){
+  fwOn=true;rockets=[];parts=[];lastLaunch=0;burstCount=0;
+  if(!fRaf) fwLoop();
+}
+function stopFireworks(){fwOn=false;}
+function launch(){
+  rockets.push({x:innerWidth*(0.15+Math.random()*0.7),y:innerHeight+10,
+    vy:-(innerHeight*0.011+Math.random()*3),targetY:innerHeight*(0.15+Math.random()*0.35),
+    c:FW_COLORS[Math.random()*FW_COLORS.length|0]});
+}
+function explode(r){
+  burstCount++;
+  const heart=burstCount%3===0,n=heart?46:70+Math.random()*30|0;
+  for(let i=0;i<n;i++){
+    let vx,vy;
+    if(heart){ // 心形烟花
+      const t=i/n*Math.PI*2,s=innerHeight*0.00042;
+      vx=16*Math.pow(Math.sin(t),3)*s*9;
+      vy=-(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t))*s*9;
+    }else{
+      const a=Math.random()*Math.PI*2,sp=(Math.random()*.75+.25)*5.2;
+      vx=Math.cos(a)*sp;vy=Math.sin(a)*sp;
+    }
+    parts.push({x:r.x,y:r.targetY,vx,vy,life:1,decay:.008+Math.random()*.012,
+      c:heart?'#ff9ec6':(Math.random()<.7?r.c:FW_COLORS[Math.random()*FW_COLORS.length|0]),
+      r:1.4+Math.random()*1.8});
+  }
+}
+function fwLoop(){
+  fRaf=requestAnimationFrame(fwLoop);
+  // 拖尾效果：透明画布上用 destination-out 渐隐
+  fCtx.globalCompositeOperation='destination-out';
+  fCtx.fillStyle='rgba(0,0,0,0.16)';fCtx.fillRect(0,0,innerWidth,innerHeight);
+  fCtx.globalCompositeOperation='lighter';
+  const now=performance.now();
+  if(fwOn&&now-lastLaunch>620){launch();lastLaunch=now;}
+  rockets=rockets.filter(r=>{
+    r.y+=r.vy;r.vy*=0.985;
+    fCtx.fillStyle=r.c;fCtx.beginPath();fCtx.arc(r.x,r.y,2.4,0,7);fCtx.fill();
+    if(r.y<=r.targetY){explode(r);return false;}
+    return true;
+  });
+  parts=parts.filter(p=>{
+    p.x+=p.vx;p.y+=p.vy;p.vy+=0.045;p.vx*=0.985;p.vy*=0.985;p.life-=p.decay;
+    if(p.life<=0)return false;
+    fCtx.globalAlpha=p.life;fCtx.fillStyle=p.c;
+    fCtx.beginPath();fCtx.arc(p.x,p.y,p.r,0,7);fCtx.fill();
+    return true;
+  });
+  fCtx.globalAlpha=1;
+  if(!fwOn&&rockets.length===0&&parts.length===0){
+    cancelAnimationFrame(fRaf);fRaf=null;
+    fCtx.clearRect(0,0,innerWidth,innerHeight);
+  }
+}
+
+/* ================= 重玩 ================= */
+$('#replay').addEventListener('click',()=>{
+  buildCakeScene();
+  $('#blessing').classList.remove('show');$('#toPhotos').classList.remove('show');
+  $('#candleHint').textContent='轻轻点击蜡烛，许下生日愿望吧';
+  envBusy=false;
+  goTo('scene0');
+});
+
+/* ================= 背景音乐（WebAudio 合成《生日快乐》） ================= */
+const NOTES={G4:392,A4:440,B4:493.88,C5:523.25,D5:587.33,E5:659.25,F5:698.46,G5:783.99};
+const MELODY=[
+  ['G4',.75],['G4',.25],['A4',1],['G4',1],['C5',1],['B4',2],
+  ['G4',.75],['G4',.25],['A4',1],['G4',1],['D5',1],['C5',2],
+  ['G4',.75],['G4',.25],['G5',1],['E5',1],['C5',1],['B4',1],['A4',2],
+  ['F5',.75],['F5',.25],['E5',1],['C5',1],['D5',1],['C5',3]
+];
+let actx=null,musicOn=true,musicStarted=false,musicTimer=null;
+function playMelody(){
+  if(!musicOn)return;
+  if(!actx)actx=new (window.AudioContext||window.webkitAudioContext)();
+  if(actx.state==='suspended')actx.resume();
+  const master=actx.createGain();master.gain.value=.22;master.connect(actx.destination);
+  const beat=.42;let t=actx.currentTime+.08;
+  for(const[n,d]of MELODY){
+    const o=actx.createOscillator(),g=actx.createGain();
+    o.type='sine';o.frequency.value=NOTES[n];
+    const dur=d*beat;
+    g.gain.setValueAtTime(.0001,t);
+    g.gain.exponentialRampToValueAtTime(.9,t+.03);
+    g.gain.exponentialRampToValueAtTime(.0001,t+dur*.92);
+    o.connect(g);g.connect(master);o.start(t);o.stop(t+dur);
+    // 轻柔和弦垫底
+    const o2=actx.createOscillator(),g2=actx.createGain();
+    o2.type='triangle';o2.frequency.value=NOTES[n]/2;
+    g2.gain.setValueAtTime(.0001,t);
+    g2.gain.exponentialRampToValueAtTime(.18,t+.05);
+    g2.gain.exponentialRampToValueAtTime(.0001,t+dur*.9);
+    o2.connect(g2);g2.connect(master);o2.start(t);o2.stop(t+dur);
+    t+=dur;
+  }
+  musicTimer=setTimeout(playMelody,(t-actx.currentTime+.8)*1000);
+}
+const musicBtn=$('#musicBtn');
+musicBtn.addEventListener('click',e=>{
+  e.stopPropagation();
+  musicOn=!musicOn;
+  musicBtn.classList.toggle('on',musicOn);
+  musicBtn.classList.toggle('off',!musicOn);
+  if(musicOn){musicStarted=true;clearTimeout(musicTimer);playMelody();}
+  else{clearTimeout(musicTimer);actx&&actx.suspend();}
+});
+// 浏览器限制：首次触摸页面时启动音乐
+window.addEventListener('pointerdown',()=>{
+  if(musicOn&&!musicStarted){musicStarted=true;playMelody();}
+},{once:false});
+
+resizeAll();
+</script>
+</body>
+</html>
